@@ -1,0 +1,4 @@
+interface:
+  display_name: "LazySlide Annotations IO"
+  short_description: "Import, export, and align WSI annotations"
+  default_prompt: "Use $lazyslide-annotations-io to load, inspect, join, or export WSI annotations."

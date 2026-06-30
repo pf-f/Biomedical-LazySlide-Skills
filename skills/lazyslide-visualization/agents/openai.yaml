@@ -1,0 +1,4 @@
+interface:
+  display_name: "LazySlide Visualization"
+  short_description: "Inspect LazySlide tissue, tiles, annotations"
+  default_prompt: "Use $lazyslide-visualization to create or debug LazySlide WSI visualizations."

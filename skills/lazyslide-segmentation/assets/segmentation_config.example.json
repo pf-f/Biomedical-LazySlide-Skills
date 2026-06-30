@@ -1,0 +1,12 @@
+{
+  "task": "cells",
+  "tile_key": "tiles_cells_20x",
+  "model": "instanseg",
+  "key_added": "cells_instanseg",
+  "batch_size": 1,
+  "num_workers": 0,
+  "device": "cuda",
+  "extract_features": false,
+  "low_memory": true
+}
+

@@ -1,0 +1,4 @@
+interface:
+  display_name: "LazySlide Core Workflow"
+  short_description: "Open, tile, and manage WSI analyses"
+  default_prompt: "Use $lazyslide-core-workflow to open a slide, find tissue, create tiles, and save results."

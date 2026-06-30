@@ -1,0 +1,4 @@
+interface:
+  display_name: "LazySlide Models Features"
+  short_description: "Use LazySlide models and feature workflows"
+  default_prompt: "Use $lazyslide-models-features to extract pathology image features and run model-based predictions."

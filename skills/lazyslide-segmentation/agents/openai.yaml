@@ -1,0 +1,4 @@
+interface:
+  display_name: "LazySlide Segmentation"
+  short_description: "Run tissue, cell, and semantic segmentation"
+  default_prompt: "Use $lazyslide-segmentation to choose and run a LazySlide segmentation workflow."

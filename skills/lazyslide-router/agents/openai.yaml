@@ -1,0 +1,4 @@
+interface:
+  display_name: "LazySlide Router"
+  short_description: "Route LazySlide WSI analysis tasks"
+  default_prompt: "Use $lazyslide-router to plan a LazySlide whole-slide image analysis workflow."

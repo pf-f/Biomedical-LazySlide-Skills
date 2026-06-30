@@ -1,0 +1,10 @@
+{
+  "plot": "tiles",
+  "tile_key": "tiles_20x",
+  "feature_key": "uni",
+  "color": "0",
+  "cmap": "viridis",
+  "target_dpi": 300,
+  "output": "feature-map.png"
+}
+

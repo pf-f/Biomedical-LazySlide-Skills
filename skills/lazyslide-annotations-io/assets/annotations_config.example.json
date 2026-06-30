@@ -1,0 +1,15 @@
+{
+  "input_file": "annotations.geojson",
+  "key_added": "annotations",
+  "json_flatten": "classification",
+  "in_bounds": false,
+  "join_with": "tiles_20x",
+  "join_to": "tiles_20x",
+  "export": {
+    "key": "cells",
+    "classes": "class",
+    "format": "qupath",
+    "file": "exports/cells.geojson"
+  }
+}
+

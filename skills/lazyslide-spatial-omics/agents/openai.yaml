@@ -1,0 +1,4 @@
+interface:
+  display_name: "LazySlide Spatial Omics"
+  short_description: "Connect WSI morphology with omics data"
+  default_prompt: "Use $lazyslide-spatial-omics to integrate LazySlide WSI features with transcriptomic or survival data."

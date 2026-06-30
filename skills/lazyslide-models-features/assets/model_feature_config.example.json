@@ -1,0 +1,17 @@
+{
+  "tile_key": "tiles_20x",
+  "feature_extraction": {
+    "model": "uni",
+    "key_added": null,
+    "device": "cuda",
+    "batch_size": 8,
+    "num_workers": 2,
+    "amp": true,
+    "dense": false
+  },
+  "aggregation": {
+    "feature_key": "uni_tiles_20x",
+    "by": "tissue_id",
+    "encoder": "mean"
+  }
+}

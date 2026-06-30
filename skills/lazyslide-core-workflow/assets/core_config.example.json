@@ -1,0 +1,17 @@
+{
+  "slide": "path/to/slide.svs",
+  "store": "path/to/slide-analysis.zarr",
+  "tissue": {
+    "method": "otsu",
+    "level": -1,
+    "key_added": "tissues_otsu"
+  },
+  "tiles": {
+    "tile_px": 256,
+    "mpp": 0.5,
+    "tissue_key": "tissues_otsu",
+    "key_added": "tiles_20x",
+    "background_filter": true,
+    "background_fraction": 0.5
+  }
+}

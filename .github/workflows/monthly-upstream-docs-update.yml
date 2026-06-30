@@ -1,0 +1,51 @@
+name: Monthly LazySlide upstream docs update
+
+on:
+  schedule:
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate upstream diff report
+        run: |
+          python skills/lazyslide-router/scripts/lazyslide_upstream_update.py \
+            --project-root . \
+            --write-report \
+            --update-snapshot
+
+      - name: Compile skill scripts
+        run: |
+          python -m py_compile $(find skills -path '*/scripts/*.py' -type f | sort)
+
+      - name: Run release integrity checks
+        run: |
+          python tests/test_release_integrity.py
+
+      - name: Open update pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: update LazySlide upstream docs snapshot"
+          title: "chore: update LazySlide upstream docs snapshot"
+          body: |
+            Monthly automated LazySlide upstream alignment check.
+
+            This PR updates metadata snapshots and reports only. Review upstream changes before editing skill scientific guidance.
+          branch: "chore/lazyslide-upstream-docs"
+          add-paths: |
+            skills/lazyslide-router/references/upstream-snapshot.json
+            skills/lazyslide-router/references/upstream-reports/**

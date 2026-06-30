@@ -1,0 +1,13 @@
+{
+  "workflow": "path2space",
+  "sample_id": "NCBI776",
+  "wsi_path": "path/to/wsi.tif",
+  "st_h5ad": "path/to/spatial.h5ad",
+  "spot_tile_px": 183,
+  "tile_key": "spots",
+  "feature_model": "ctranspath",
+  "prediction_model": "path2space",
+  "target_genes": ["CHEK2", "ERBB2", "CDH1"],
+  "interpretation": "research_demo_not_clinical"
+}
+
