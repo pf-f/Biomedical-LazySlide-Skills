@@ -16,10 +16,11 @@ Track upstream changes without bundling downloaded tutorials.
 Run:
 
 ```bash
-python skills/lazyslide-router/scripts/lazyslide_upstream_update.py --write-report --update-snapshot
+LAZYSLIDE_ROUTER_SKILL="${LAZYSLIDE_ROUTER_SKILL:-$HOME/.codex/skills/lazyslide-router}"
+python "$LAZYSLIDE_ROUTER_SKILL/scripts/lazyslide_upstream_update.py" --write-report --update-snapshot
 ```
 
-The script records checksums, sizes, URLs, and repository paths. It writes a concise report under `update-reports/`. It does not rewrite skill references.
+The script records checksums, sizes, URLs, and repository paths. It writes concise reports under `skills/lazyslide-router/references/upstream-reports/`. It does not rewrite skill references.
 
 Review the report and update skills manually when changes affect:
 
@@ -35,7 +36,8 @@ Review the report and update skills manually when changes affect:
 Use:
 
 ```bash
-python skills/lazyslide-router/scripts/lazyslide_upstream_check.py --query "feature_extraction" --limit 10
+LAZYSLIDE_ROUTER_SKILL="${LAZYSLIDE_ROUTER_SKILL:-$HOME/.codex/skills/lazyslide-router}"
+python "$LAZYSLIDE_ROUTER_SKILL/scripts/lazyslide_upstream_check.py" --query "feature_extraction" --limit 10
 ```
 
 This searches official URLs and GitHub tree entries for likely source pages. Prefer upstream pages over stale bundled references when resolving conflicts.

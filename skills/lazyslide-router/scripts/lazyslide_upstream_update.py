@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 import urllib.error
@@ -60,7 +61,7 @@ def text_metadata(name: str, url: str, data: bytes, headers: dict[str, str]) -> 
 
 def tree_metadata(name: str, url: str, data: bytes, headers: dict[str, str]) -> dict[str, object]:
     parsed = json.loads(data.decode("utf-8"))
-    tree = parsed.get("tree", [])
+    tree = sorted(parsed.get("tree", []), key=lambda item: item.get("path", ""))
     paths = [item.get("path", "") for item in tree if item.get("type") == "blob"]
     interesting = [
         path
@@ -143,6 +144,22 @@ def compare(old: dict[str, object] | None, new: dict[str, object]) -> dict[str, 
     return {"added": added, "removed": removed, "changed": changed, "unchanged": unchanged}
 
 
+def collection_errors(snapshot: dict[str, object]) -> list[dict[str, object]]:
+    return [entry for entry in snapshot.get("entries", []) if entry.get("status") != "ok"]
+
+
+def has_semantic_changes(diff: dict[str, list[str]]) -> bool:
+    return any(diff[key] for key in ("added", "removed", "changed"))
+
+
+def project_report_dir(root: Path, report_dir: Path) -> Path:
+    candidate = report_dir if report_dir.is_absolute() else root / report_dir
+    candidate = candidate.resolve()
+    if not candidate.is_relative_to(root):
+        raise ValueError(f"report directory must remain inside project root: {candidate}")
+    return candidate
+
+
 DEFAULT_REPORT_DIR = Path("skills/lazyslide-router/references/upstream-reports")
 
 
@@ -194,7 +211,7 @@ def main() -> int:
     parser.add_argument("--write-report", action="store_true")
     parser.add_argument("--report-dir", type=Path, default=DEFAULT_REPORT_DIR)
     parser.add_argument("--update-snapshot", action="store_true")
-    parser.add_argument("--snapshot-only", action="store_true", help="Collect and print/write snapshot without updating saved baseline unless requested.")
+    parser.add_argument("--snapshot-only", action="store_true", help="Print the collected snapshot without writing files.")
     parser.add_argument("--max-sources", type=int, default=None, help="Debug limit for fast smoke tests.")
     args = parser.parse_args()
 
@@ -202,10 +219,31 @@ def main() -> int:
     snapshot_path = root / "skills" / "lazyslide-router" / "references" / "upstream-snapshot.json"
     previous = load_snapshot(snapshot_path)
     current = collect(max_sources=args.max_sources)
+
+    if args.snapshot_only:
+        print(json.dumps(current, indent=2, sort_keys=True))
+        return 2 if collection_errors(current) else 0
+
+    errors = collection_errors(current)
+    if errors:
+        names = ", ".join(str(entry.get("name", "<unknown>")) for entry in errors)
+        print(f"Incomplete upstream collection; preserving previous snapshot. Failed: {names}", file=sys.stderr)
+        return 2
+
     diff = compare(previous, current)
 
+    if not has_semantic_changes(diff):
+        print("No upstream changes; no files written.")
+        print(json.dumps({"diff": diff, "generated_at": current["generated_at"]}, indent=2, sort_keys=True))
+        return 0
+
     if args.write_report:
-        report_path = write_report(root, current, diff, args.report_dir)
+        try:
+            report_dir = project_report_dir(root, args.report_dir)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        report_path = write_report(root, current, diff, report_dir)
         print(f"Wrote {report_path.relative_to(root)}")
 
     if args.update_snapshot:

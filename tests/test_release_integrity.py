@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import py_compile
+import json
 import re
 import subprocess
 import tempfile
@@ -47,6 +48,7 @@ ALLOWED_TRACKED_TOP_LEVELS = {
 
 REQUIRED_TRACKED_FILES = {
     ".github/workflows/monthly-upstream-docs-update.yml",
+    ".github/workflows/validate.yml",
     ".gitignore",
     "README.md",
     "skills/lazyslide-router/scripts/lazyslide_env.py",
@@ -322,6 +324,28 @@ def check_openai_yaml_prompts() -> None:
             fail(f"agents/openai.yaml for {skill} must mention {expected}")
 
 
+def check_domain_script_commands_are_cwd_independent() -> None:
+    for skill in SKILLS:
+        if skill == "lazyslide-router":
+            continue
+        text = read(ROOT / "skills" / skill / "SKILL.md")
+        repository_relative = f"python skills/{skill}/scripts/"
+        if repository_relative in text:
+            fail(f"{skill}/SKILL.md uses a repository-relative helper command")
+        env_var = skill.upper().replace("-", "_") + "_SKILL"
+        installed_script_prefix = f'python "${env_var}/scripts/'
+        if installed_script_prefix not in text:
+            fail(f"{skill}/SKILL.md does not run its helper through ${env_var}")
+
+    upstream_sources = read(
+        ROOT / "skills" / "lazyslide-router" / "references" / "upstream-sources.md"
+    )
+    if "python skills/lazyslide-router/scripts/" in upstream_sources:
+        fail("router upstream-sources.md uses repository-relative helper commands")
+    if 'python "$LAZYSLIDE_ROUTER_SKILL/scripts/' not in upstream_sources:
+        fail("router upstream-sources.md does not use $LAZYSLIDE_ROUTER_SKILL")
+
+
 def check_frontmatter() -> None:
     for skill in SKILLS:
         text = read(ROOT / "skills" / skill / "SKILL.md")
@@ -333,6 +357,69 @@ def check_frontmatter() -> None:
         match = re.search(r"description:\s*(.+)", frontmatter)
         if not match or len(match.group(1)) < 80:
             fail(f"{skill}/SKILL.md description is too short")
+        if not match.group(1).startswith("Use when"):
+            fail(f"{skill}/SKILL.md description must start with trigger conditions")
+
+
+def check_router_trigger_matches_router_scope() -> None:
+    text = read(ROOT / "skills" / "lazyslide-router" / "SKILL.md")
+    frontmatter = text.split("---", 2)[1]
+    description = re.search(r"description:\s*(.+)", frontmatter)
+    if not description or not description.group(1).startswith("Use when"):
+        fail("router description must state trigger conditions first")
+    if "mentions LazySlide" in description.group(1):
+        fail("router description is broader than its ambiguous-task routing scope")
+
+
+def check_core_persistence_requires_explicit_overwrite() -> None:
+    skill = read(ROOT / "skills" / "lazyslide-core-workflow" / "SKILL.md")
+    if "if store_path.exists():" not in skill:
+        fail("core workflow does not guard an existing analysis store before overwrite")
+    if "explicitly approved" not in skill:
+        fail("core workflow does not require explicit approval before replacing a store")
+
+
+def check_visualization_examples_use_verified_keys() -> None:
+    skill = read(ROOT / "skills" / "lazyslide-visualization" / "SKILL.md")
+    reference = read(
+        ROOT / "skills" / "lazyslide-visualization" / "references" / "reference-pack.md"
+    )
+    if "--feature-key uni " in skill:
+        fail("visualization helper example uses an ambiguous feature key")
+    if 'feature_key="uni"' in reference:
+        fail("visualization publication example uses an ambiguous feature key")
+    if "assets/visualization_config.example.json" not in skill:
+        fail("visualization skill does not expose its bundled run manifest")
+
+
+def check_model_example_uses_its_declared_output_key() -> None:
+    text = read(ROOT / "skills" / "lazyslide-models-features" / "SKILL.md")
+    if 'key_added="uni_experiment_a"' not in text:
+        fail("model example no longer declares its output key")
+    if 'feature_key = "uni_experiment_a"' not in text:
+        fail("model example does not validate the key declared by key_added")
+
+
+def check_assets_are_referenced_and_valid_json() -> None:
+    for skill in SKILLS:
+        base = ROOT / "skills" / skill
+        skill_text = read(base / "SKILL.md")
+        for asset in sorted((base / "assets").glob("*.json")):
+            reference = f"assets/{asset.name}"
+            if reference not in skill_text:
+                fail(f"{skill}/SKILL.md does not reference {reference}")
+            try:
+                json.loads(read(asset))
+            except json.JSONDecodeError as exc:
+                fail(f"invalid JSON asset {asset.relative_to(ROOT)}: {exc}")
+
+
+def check_segmentation_has_result_validation_gate() -> None:
+    text = read(ROOT / "skills" / "lazyslide-segmentation" / "SKILL.md")
+    if "## Completion Gate" not in text:
+        fail("segmentation skill lacks an explicit completion gate")
+    if "plausible plot is not validation" not in text:
+        fail("segmentation skill does not distinguish visual QC from validation")
 
 
 def check_router_environment_docs_are_wired() -> None:
@@ -360,11 +447,38 @@ def check_router_environment_docs_are_wired() -> None:
         fail("environment guide does not expose the JSON inspector command")
     if "lazyslide_env.py" not in env_text or "plan" not in env_text:
         fail("environment guide does not expose the environment planner command")
+    upstream_sources = read(
+        ROOT / "skills" / "lazyslide-router" / "references" / "upstream-sources.md"
+    )
+    if "skills/lazyslide-router/references/upstream-reports/" not in upstream_sources:
+        fail("upstream sources guide does not document the skill-scoped report directory")
     workflow = read(ROOT / ".github" / "workflows" / "monthly-upstream-docs-update.yml")
     if "update-reports/**" in workflow:
         fail("monthly workflow must not add root-level update-reports")
     if "skills/lazyslide-router/references/upstream-reports/**" not in workflow:
         fail("monthly workflow does not add skill-scoped upstream reports")
+
+
+def check_readme_and_workflows_run_complete_validation() -> None:
+    readme = read(ROOT / "README.md")
+    if "git clone <repo-url>" in readme:
+        fail("README still contains the repository URL placeholder")
+    if "https://github.com/pf-f/Biomedical-LazySlide-Skills.git" not in readme:
+        fail("README does not contain the public clone URL")
+
+    unit_command = "python -m unittest discover -s tests -p 'test_*.py' -v"
+    release_command = "python tests/test_release_integrity.py"
+    for rel in [
+        ".github/workflows/monthly-upstream-docs-update.yml",
+        ".github/workflows/validate.yml",
+    ]:
+        text = read(ROOT / rel)
+        if unit_command not in text or release_command not in text:
+            fail(f"{rel} does not run the complete lightweight validation suite")
+
+    validation = read(ROOT / ".github" / "workflows" / "validate.yml")
+    if "pull_request:" not in validation or "push:" not in validation:
+        fail("validate workflow must run for pushes and pull requests")
 
 
 def check_workflows_avoid_heavy_runtime_installs() -> None:
@@ -391,8 +505,16 @@ def main() -> int:
     check_no_untracked_release_files()
     check_no_tracked_release_artifacts()
     check_openai_yaml_prompts()
+    check_domain_script_commands_are_cwd_independent()
     check_frontmatter()
+    check_router_trigger_matches_router_scope()
+    check_core_persistence_requires_explicit_overwrite()
+    check_visualization_examples_use_verified_keys()
+    check_model_example_uses_its_declared_output_key()
+    check_assets_are_referenced_and_valid_json()
+    check_segmentation_has_result_validation_gate()
     check_router_environment_docs_are_wired()
+    check_readme_and_workflows_run_complete_validation()
     check_workflows_avoid_heavy_runtime_installs()
     print("release integrity checks passed")
     return 0

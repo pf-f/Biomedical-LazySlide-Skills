@@ -1,6 +1,6 @@
 ---
 name: lazyslide-spatial-omics
-description: LazySlide spatial omics and slide-level integration workflows linking WSI morphology features with RNA-seq, spatial transcriptomics, AnnData/MuData, RNALinker, Path2Space gene expression prediction, MOFA-style multimodal analysis, slide-level labels, multiple slides, and survival prediction demos. Use when users ask to connect LazySlide features to transcriptomics/genomics/spatial gene expression, predict genes from H&E, aggregate slide features for cohorts, or analyze survival/clinical metadata from WSI features.
+description: Use when a LazySlide task links WSI morphology features with RNA-seq, spatial transcriptomics, AnnData/MuData, RNALinker, Path2Space, MOFA-style multimodal data, slide/patient labels, multi-slide cohorts, survival metadata, or gene-expression prediction from H&E.
 ---
 
 # LazySlide Spatial Omics
@@ -41,5 +41,8 @@ Use this skill when LazySlide morphology features leave a single-slide visualiza
 ## Script
 
 ```bash
-python skills/lazyslide-spatial-omics/scripts/lazyslide_spatial_omics_plan.py --workflow path2space --sample-id NCBI776
+LAZYSLIDE_SPATIAL_OMICS_SKILL="${LAZYSLIDE_SPATIAL_OMICS_SKILL:-$HOME/.codex/skills/lazyslide-spatial-omics}"
+python "$LAZYSLIDE_SPATIAL_OMICS_SKILL/scripts/lazyslide_spatial_omics_plan.py" --workflow path2space --sample-id NCBI776
 ```
+
+For a version-controlled integration manifest, copy `assets/spatial_omics_config.example.json` and replace all IDs, units, paths, and model assumptions with verified values; the planner does not consume this file automatically.

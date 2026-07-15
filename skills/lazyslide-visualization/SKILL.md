@@ -1,6 +1,6 @@
 ---
 name: lazyslide-visualization
-description: LazySlide visualization workflows for plotting WSI tissue, tiles, annotations, feature maps, prediction maps, zoomed regions, publication figures, and WSIViewer debugging. Use when the user asks about zs.pl.tissue, zs.pl.tiles, zs.pl.annotations, WSIViewer, coloring tiles by columns or feature tables, blank/misaligned plots, tissue_id/zoom views, Matplotlib export, DPI, palettes, or checking visual outputs from LazySlide workflows.
+description: Use when a LazySlide task plots or debugs WSI tissue, tiles, annotations, feature/prediction maps, zoomed regions, WSIViewer output, blank or misaligned figures, tile/table coloring, Matplotlib export, DPI, palettes, or visual QC.
 ---
 
 # LazySlide Visualization
@@ -55,5 +55,8 @@ For a "feature map", decide what the color means: a raw embedding dimension such
 ## Script
 
 ```bash
-python skills/lazyslide-visualization/scripts/lazyslide_visualization_plan.py --plot tiles --tile-key tiles_20x --feature-key uni --color leiden
+LAZYSLIDE_VISUALIZATION_SKILL="${LAZYSLIDE_VISUALIZATION_SKILL:-$HOME/.codex/skills/lazyslide-visualization}"
+python "$LAZYSLIDE_VISUALIZATION_SKILL/scripts/lazyslide_visualization_plan.py" --plot tiles --tile-key tiles_20x --feature-key uni_tiles_20x --color leiden
 ```
+
+For a version-controlled plot manifest, copy `assets/visualization_config.example.json` and replace its keys/output with inspected values; the planner does not consume this file automatically.

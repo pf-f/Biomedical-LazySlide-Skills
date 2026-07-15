@@ -59,7 +59,7 @@ Zoom coordinates are level-0 pixel coordinates.
 import matplotlib.pyplot as plt
 
 fig, ax = plt.subplots(figsize=(6, 6))
-zs.pl.tiles(wsi, feature_key="uni", color="0", target_dpi=300, ax=ax)
+zs.pl.tiles(wsi, tile_key="tiles_20x", feature_key="uni_tiles_20x", color="0", target_dpi=300, ax=ax)
 fig.savefig("feature-map.png", dpi=300, bbox_inches="tight")
 ```
 

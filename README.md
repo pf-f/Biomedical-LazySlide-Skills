@@ -17,7 +17,7 @@ Codex skills for [LazySlide](https://github.com/rendeirolab/LazySlide) workflows
 Recommended: install the skills into Codex's local skills directory.
 
 ```bash
-git clone <repo-url> lazyslide-skills
+git clone https://github.com/pf-f/Biomedical-LazySlide-Skills.git lazyslide-skills
 mkdir -p ~/.codex/skills
 rsync -a --exclude '__pycache__/' --exclude '*.pyc' --exclude '.pytest_cache/' lazyslide-skills/skills/lazyslide-* ~/.codex/skills/
 ```
@@ -44,7 +44,7 @@ Use `create` only after reviewing the plan. Available profiles are `core`, `anal
 ## Validate
 
 ```bash
-python -m py_compile $(find skills -path '*/scripts/*.py' -type f | sort)
+python -m unittest discover -s tests -p 'test_*.py' -v
 python tests/test_release_integrity.py
 ```
 

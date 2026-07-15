@@ -1,6 +1,6 @@
 ---
 name: lazyslide-models-features
-description: LazySlide model and feature workflows for lazyslide_models, model zoo selection, pathology foundation models, feature extraction, dense ViT features, feature aggregation, slide encoders, tile prediction, feature prediction, zero-shot learning, text embeddings, text-image similarity, slide captions, virtual staining, and histology image generation. Use when users ask to choose or run models such as UNI, PLIP, CONCH, Titan, CTransPath, Path2Space, GigaPath, H-optimus, Virchow, or need device/memory/gated-model guidance for LazySlide feature pipelines.
+description: Use when a LazySlide task selects or runs lazyslide_models, pathology foundation models, feature extraction or aggregation, tile/feature prediction, zero-shot or text-image workflows, captions, virtual staining, or image generation, including device, memory, license, and gated-access decisions.
 ---
 
 # LazySlide Models and Features
@@ -29,16 +29,20 @@ from lazyslide_models import list_models
 import lazyslide as zs
 
 print(list_models("vision"))
+device = "cpu"  # replace only after runtime inspection confirms cuda or mps
 zs.tl.feature_extraction(
     wsi,
     model="uni",
     tile_key="tiles_20x",
     key_added="uni_experiment_a",
-    device="cuda",
+    device=device,
     batch_size=8,
     num_workers=2,
 )
 print(list(wsi.tables))
+feature_key = "uni_experiment_a"  # matches key_added above; verify it was created
+if wsi.tables[feature_key].n_obs != len(wsi.shapes["tiles_20x"]):
+    raise RuntimeError("Feature rows do not match tiles; regenerate from the matching tile layer.")
 ```
 
 Feature tables normally use `{model}_{tile_key}`. Always run `print(list(wsi.tables))` after extraction and use the actual matching table/key in downstream calls.
@@ -66,5 +70,9 @@ zs.tl.spatial_domain(wsi, feature_key=feature_key, layer="spatial_features")
 ## Script
 
 ```bash
-python skills/lazyslide-models-features/scripts/lazyslide_model_plan.py --workflow feature-extraction --model uni --tile-key tiles_20x
+LAZYSLIDE_MODELS_FEATURES_SKILL="${LAZYSLIDE_MODELS_FEATURES_SKILL:-$HOME/.codex/skills/lazyslide-models-features}"
+DEVICE="${DEVICE:-cpu}"
+python "$LAZYSLIDE_MODELS_FEATURES_SKILL/scripts/lazyslide_model_plan.py" --workflow feature-extraction --model uni --tile-key tiles_20x --device "$DEVICE"
 ```
+
+For a version-controlled run manifest, copy `assets/model_feature_config.example.json` and replace every placeholder with inspected values; the planner does not consume this file automatically.

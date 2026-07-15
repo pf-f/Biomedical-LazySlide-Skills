@@ -1,6 +1,6 @@
 ---
 name: lazyslide-segmentation
-description: LazySlide segmentation workflows for tissue segmentation, cell/nucleus segmentation, semantic segmentation, artifact segmentation, and segmentation metrics. Use when the user asks to run or debug zs.seg.tissue, zs.seg.cells, zs.seg.semantic, zs.seg.artifact, learned tissue masks, HistoPLUS, Instanseg, NuLite, Cellpose, SAM, GrandQC, segmentation memory issues, overlapping segmentation tiles, class maps, or Dice/IoU/PQ evaluation.
+description: Use when a LazySlide task runs or debugs tissue, cell/nucleus, semantic, or artifact segmentation; uses zs.seg APIs or models such as HistoPLUS, Instanseg, NuLite, Cellpose, SAM, or GrandQC; or evaluates aligned masks with Dice, IoU, or PQ.
 ---
 
 # LazySlide Segmentation
@@ -39,6 +39,11 @@ zs.seg.cells(
 zs.pl.annotations(wsi, key="cells_instanseg")
 ```
 
+## Completion Gate
+
+- Confirm the requested output key exists, is nonempty, and retains the intended class/geometry fields.
+- Treat overlays as geometry/QC checks only: a plausible plot is not validation. Quantitative or biological claims require aligned references, declared class/background rules, and task-appropriate metrics or expert labels.
+
 ## Stop Conditions
 
 - MPP or tile specification is unknown for a model with resolution assumptions.
@@ -50,5 +55,8 @@ zs.pl.annotations(wsi, key="cells_instanseg")
 ## Script
 
 ```bash
-python skills/lazyslide-segmentation/scripts/lazyslide_segmentation_plan.py --task cells --model instanseg --tile-key tiles_cells_20x
+LAZYSLIDE_SEGMENTATION_SKILL="${LAZYSLIDE_SEGMENTATION_SKILL:-$HOME/.codex/skills/lazyslide-segmentation}"
+python "$LAZYSLIDE_SEGMENTATION_SKILL/scripts/lazyslide_segmentation_plan.py" --task cells --model instanseg --tile-key tiles_cells_20x
 ```
+
+For a version-controlled run manifest, copy `assets/segmentation_config.example.json` and replace its runtime/model values with inspected values; the planner does not consume this file automatically.

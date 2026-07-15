@@ -1,6 +1,6 @@
 ---
 name: lazyslide-router
-description: Route LazySlide whole-slide image analysis tasks and choose the right LazySlide domain skill, references, and helper scripts. Use when the user mentions LazySlide, lazyslide, WSI/whole-slide images, WSIData, digital pathology slide analysis, tissue/tiling/features/segmentation/annotations/visualization in LazySlide, asks which LazySlide workflow or model to use, needs LazySlide environment inspection, bundled docs lookup, or monthly upstream documentation/source alignment checks against ReadTheDocs and rendeirolab repositories.
+description: Use when a LazySlide task is ambiguous across workflow domains, the runtime/imports/readers/devices are missing or uncertain, bundled LazySlide guidance must be searched, or official documentation and rendeirolab source drift must be checked.
 ---
 
 # LazySlide Router

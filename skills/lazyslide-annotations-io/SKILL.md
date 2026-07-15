@@ -1,6 +1,6 @@
 ---
 name: lazyslide-annotations-io
-description: LazySlide annotation import/export and coordinate alignment workflows for GeoJSON, QuPath, Hamamatsu NDPA, spatial joins, ROI tiling, class-field inspection, shifted annotations, in_bounds handling, and exporting cells or shapes back to QuPath-compatible GeoJSON. Use when users ask about zs.io.load_annotations, zs.io.export_annotations, joining annotations to tiles, analyzing annotated regions, fixing shifted/scaled/mirrored annotations, or preserving annotation classes in WSIData.
+description: Use when a LazySlide task imports, inspects, aligns, joins, labels from, or exports WSI annotations such as GeoJSON, QuPath, or Hamamatsu NDPA, especially when coordinate origins, class fields, ROI tiling, in_bounds handling, or shifted/scaled/mirrored geometries matter.
 ---
 
 # LazySlide Annotations IO
@@ -58,5 +58,8 @@ zs.io.export_annotations(
 ## Script
 
 ```bash
-python skills/lazyslide-annotations-io/scripts/lazyslide_annotations_plan.py --action load --file annotations.geojson --key annotations
+LAZYSLIDE_ANNOTATIONS_IO_SKILL="${LAZYSLIDE_ANNOTATIONS_IO_SKILL:-$HOME/.codex/skills/lazyslide-annotations-io}"
+python "$LAZYSLIDE_ANNOTATIONS_IO_SKILL/scripts/lazyslide_annotations_plan.py" --action load --file annotations.geojson --key annotations
 ```
+
+For a version-controlled IO manifest, copy `assets/annotations_config.example.json` and replace its keys, coordinate options, and export path with verified values; the planner does not consume this file automatically.
